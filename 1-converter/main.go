@@ -5,9 +5,10 @@ import (
 	"fmt"
 )
 
-const usdToEuro = 0.86
+/*const usdToEuro = 0.86
 const usdToRub = 78.25
 const euroToRub = usdToRub / usdToEuro
+*/
 
 func main() {
 	user()
@@ -52,7 +53,24 @@ func main() {
 			break
 		}
 
-		fmt.Printf("Итого: %.2f", convert(amount, valutaIn, valutaTo))
+		// USD-EUR:0.86  USD-RUB:78.25  EUR-USD:1.16279  EUR-RUB:90.98837  RUB-USD:0.01278 RUB-EUR:0.01099
+		valutaMAP := map[string]float64{
+			"USDEUR": 0.86,
+			"USDRUB": 78.25,
+			"EURUSD": 1.16279,
+			"EURRUB": 90.98837,
+			"RUBUSD": 0.01278,
+			"RUBEUR": 0.01099}
+
+		valutaInTo := valutaIn + valutaTo
+		for key, value := range valutaMAP {
+			if valutaInTo == key {
+				itogo := value * amount
+				fmt.Printf("Итого: %.2f", itogo)
+			}
+		}
+
+		// fmt.Printf("Итого: %.2f", convert(amount, valutaIn, valutaTo))
 		break
 	}
 }
@@ -64,7 +82,7 @@ func user() string {
 	return name
 }
 
-func convert(amount float64, from string, to string) float64 {
+/*func convert(amount float64, from string, to string) float64 {
 	switch {
 	case from == "USD" && to == "EUR":
 		return amount * usdToEuro
@@ -81,7 +99,7 @@ func convert(amount float64, from string, to string) float64 {
 	default:
 		return amount
 	}
-}
+}*/
 
 func viborValuti(valuta string) (string, string) {
 	switch valuta {
