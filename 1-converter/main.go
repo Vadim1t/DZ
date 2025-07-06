@@ -14,6 +14,9 @@ func main() {
 	user()
 	var amount float64
 	var valutaIn, valutaTo string
+	ptr := func(f float64) *float64 {
+		return &f
+	}
 
 	for {
 		fmt.Print("Выберите исходнкю валюту для конвертации: USD, EUR, RUB: ")
@@ -54,18 +57,20 @@ func main() {
 		}
 
 		// USD-EUR:0.86  USD-RUB:78.25  EUR-USD:1.16279  EUR-RUB:90.98837  RUB-USD:0.01278 RUB-EUR:0.01099
-		valutaMAP := map[string]float64{
-			"USDEUR": 0.86,
-			"USDRUB": 78.25,
-			"EURUSD": 1.16279,
-			"EURRUB": 90.98837,
-			"RUBUSD": 0.01278,
-			"RUBEUR": 0.01099}
+
+		valutaMAP := map[string]*float64{
+			"USDEUR": ptr(0.86),
+			"USDRUB": ptr(78.25),
+			"EURUSD": ptr(1.16279),
+			"EURRUB": ptr(90.98837),
+			"RUBUSD": ptr(0.01278),
+			"RUBEUR": ptr(0.01099),
+		}
 
 		valutaInTo := valutaIn + valutaTo
 		for key, value := range valutaMAP {
 			if valutaInTo == key {
-				itogo := value * amount
+				itogo := (*value) * amount
 				fmt.Printf("Итого: %.2f", itogo)
 			}
 		}
