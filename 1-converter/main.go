@@ -15,21 +15,24 @@ var (
 	rateRUBEUR float64 = 0.86 / 78.25
 )
 
-// Глобальный map с указателями на курсы
-var valutaMAP = map[string]*float64{
-	"USDEUR": &rateUSDEUR,
-	"EURUSD": &rateEURUSD,
-	"USDRUB": &rateUSDRUB,
-	"RUBUSD": &rateRUBUSD,
-	"EURRUB": &rateEURRUB,
-	"RUBEUR": &rateRUBEUR,
+// getRatesMap создаёт и возвращает указатель на map с курсами
+func getRatesMap() *map[string]*float64 {
+	rates := map[string]*float64{
+		"USDEUR": &rateUSDEUR,
+		"EURUSD": &rateEURUSD,
+		"USDRUB": &rateUSDRUB,
+		"RUBUSD": &rateRUBUSD,
+		"EURRUB": &rateEURRUB,
+		"RUBEUR": &rateRUBEUR,
+	}
+	return &rates
 }
 
 func main() {
 	user()
 
-	// Берём указатель на глобальный map — создаётся один раз, вне цикла
-	ratesPtr := &valutaMAP
+	// Создаём map с курсами один раз и берём указатель
+	ratesPtr := getRatesMap()
 
 	var amount float64
 	var valutaIn, valutaTo string
@@ -38,7 +41,6 @@ func main() {
 		fmt.Print("Выберите исходнкю валюту для конвертации: USD, EUR, RUB: ")
 		fmt.Scan(&valutaIn)
 		ishodValuta, err := proverkaValuti(valutaIn)
-
 		if err != nil {
 			fmt.Println("Неправильно указана исходная валюта: ", valutaIn)
 			continue
@@ -64,15 +66,15 @@ func main() {
 			valutaVibor1, valutaVibor2 := viborValuti(ishodValuta)
 			fmt.Println("Выберите целевую валюту для конвертации: ", valutaVibor1, "/", valutaVibor2)
 			fmt.Scan(&valutaTo)
-			vibor, err := proverkaValuti(valutaTo)
+			_, err := proverkaValuti(valutaTo)
 			if err != nil {
-				fmt.Println("Неправильно указана целевая валюта: ", vibor)
+				fmt.Println("Неправильно указана целевая валюта: ", valutaTo)
 				continue
 			}
 			break
 		}
 
-		result, err := convert(amount, valutaIn, valutaTo, ratesPtr)
+		result, err := convertCurrency(amount, valutaIn, valutaTo, ratesPtr)
 		if err != nil {
 			fmt.Println("Ошибка конвертации:", err)
 			return
@@ -108,8 +110,8 @@ func proverkaValuti(valuta string) (string, error) {
 	return valuta, nil
 }
 
-// convert принимает указатель на map[string]*float64
-func convert(amount float64, valutaIn, valutaTo string, rates *map[string]*float64) (float64, error) {
+// convertCurrency принимает указатель на map с курсами и выполняет конвертацию
+func convertCurrency(amount float64, valutaIn, valutaTo string, rates *map[string]*float64) (float64, error) {
 	if valutaIn == valutaTo {
 		return amount, nil
 	}
