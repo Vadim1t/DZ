@@ -7,6 +7,11 @@ import (
 
 func main() {
 	user()
+
+	// Создаём map один раз и берём его адрес
+	rates := getRatesMap()
+	ratesPtr := &rates
+
 	var amount float64
 	var valutaIn, valutaTo string
 
@@ -22,11 +27,11 @@ func main() {
 
 		for {
 			fmt.Print("Введите сумму для конвертации: ")
-			n, err := fmt.Scan(&amount) // проверяем колличество введеных аргументов n
+			n, err := fmt.Scan(&amount)
 			if err != nil || n != 1 {
 				fmt.Println("Ошибка ввода. Пожалуйста, введите число.")
 				var discard string
-				fmt.Scanln(&discard) // очищаем остаток строки
+				fmt.Scanln(&discard)
 				continue
 			}
 			if amount < 0 {
@@ -48,8 +53,7 @@ func main() {
 			break
 		}
 
-		rates := getRatesMap()
-		result, err := convert(amount, valutaIn, valutaTo, rates)
+		result, err := convert(amount, valutaIn, valutaTo, ratesPtr)
 		if err != nil {
 			fmt.Println("Ошибка конвертации:", err)
 			return
@@ -81,13 +85,13 @@ func viborValuti(valuta string) (string, string) {
 func proverkaValuti(valuta string) (string, error) {
 	if valuta != "USD" && valuta != "EUR" && valuta != "RUB" {
 		return "", errors.New("no_params_error")
-	} else {
-		return valuta, nil
 	}
+	return valuta, nil
 }
 
-func getRatesMap() *map[string]float64 {
-	rates := map[string]float64{
+// Возвращаем map (не указатель)
+func getRatesMap() map[string]float64 {
+	return map[string]float64{
 		"USDEUR": 0.86,
 		"EURUSD": 1 / 0.86,
 		"USDRUB": 78.25,
@@ -95,16 +99,17 @@ func getRatesMap() *map[string]float64 {
 		"EURRUB": 78.25 / 0.86,
 		"RUBEUR": 0.86 / 78.25,
 	}
-	return &rates
 }
 
+// Функция принимает указатель на map
 func convert(amount float64, valutaIn, valutaTo string, rates *map[string]float64) (float64, error) {
+	if valutaIn == valutaTo {
+		return amount, nil
+	}
+
 	key := valutaIn + valutaTo
 	rate, ok := (*rates)[key]
 	if !ok {
-		if valutaIn == valutaTo {
-			return amount, nil
-		}
 		return 0, errors.New("курс конвертации не найден")
 	}
 	return amount * rate, nil
