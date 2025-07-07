@@ -5,12 +5,31 @@ import (
 	"fmt"
 )
 
+// Глобальные переменные с курсами валют
+var (
+	rateUSDEUR float64 = 0.86
+	rateEURUSD float64 = 1 / 0.86
+	rateUSDRUB float64 = 78.25
+	rateRUBUSD float64 = 1 / 78.25
+	rateEURRUB float64 = 78.25 / 0.86
+	rateRUBEUR float64 = 0.86 / 78.25
+)
+
+// Глобальный map с указателями на курсы
+var valutaMAP = map[string]*float64{
+	"USDEUR": &rateUSDEUR,
+	"EURUSD": &rateEURUSD,
+	"USDRUB": &rateUSDRUB,
+	"RUBUSD": &rateRUBUSD,
+	"EURRUB": &rateEURRUB,
+	"RUBEUR": &rateRUBEUR,
+}
+
 func main() {
 	user()
 
-	// Создаём map один раз и берём его адрес
-	rates := getRatesMap()
-	ratesPtr := &rates
+	// Берём указатель на глобальный map — создаётся один раз, вне цикла
+	ratesPtr := &valutaMAP
 
 	var amount float64
 	var valutaIn, valutaTo string
@@ -89,28 +108,16 @@ func proverkaValuti(valuta string) (string, error) {
 	return valuta, nil
 }
 
-// Возвращаем map (не указатель)
-func getRatesMap() map[string]float64 {
-	return map[string]float64{
-		"USDEUR": 0.86,
-		"EURUSD": 1 / 0.86,
-		"USDRUB": 78.25,
-		"RUBUSD": 1 / 78.25,
-		"EURRUB": 78.25 / 0.86,
-		"RUBEUR": 0.86 / 78.25,
-	}
-}
-
-// Функция принимает указатель на map
-func convert(amount float64, valutaIn, valutaTo string, rates *map[string]float64) (float64, error) {
+// convert принимает указатель на map[string]*float64
+func convert(amount float64, valutaIn, valutaTo string, rates *map[string]*float64) (float64, error) {
 	if valutaIn == valutaTo {
 		return amount, nil
 	}
 
 	key := valutaIn + valutaTo
-	rate, ok := (*rates)[key]
-	if !ok {
+	ratePtr, ok := (*rates)[key]
+	if !ok || ratePtr == nil {
 		return 0, errors.New("курс конвертации не найден")
 	}
-	return amount * rate, nil
+	return amount * (*ratePtr), nil
 }
