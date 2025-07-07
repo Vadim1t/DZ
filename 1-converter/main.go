@@ -5,18 +5,10 @@ import (
 	"fmt"
 )
 
-/*const usdToEuro = 0.86
-const usdToRub = 78.25
-const euroToRub = usdToRub / usdToEuro
-*/
-
 func main() {
 	user()
 	var amount float64
 	var valutaIn, valutaTo string
-	ptr := func(f float64) *float64 {
-		return &f
-	}
 
 	for {
 		fmt.Print("Выберите исходнкю валюту для конвертации: USD, EUR, RUB: ")
@@ -56,26 +48,14 @@ func main() {
 			break
 		}
 
-		// USD-EUR:0.86  USD-RUB:78.25  EUR-USD:1.16279  EUR-RUB:90.98837  RUB-USD:0.01278 RUB-EUR:0.01099
-
-		valutaMAP := map[string]*float64{
-			"USDEUR": ptr(0.86),
-			"USDRUB": ptr(78.25),
-			"EURUSD": ptr(1.16279),
-			"EURRUB": ptr(90.98837),
-			"RUBUSD": ptr(0.01278),
-			"RUBEUR": ptr(0.01099),
+		rates := getRatesMap()
+		result, err := convert(amount, valutaIn, valutaTo, rates)
+		if err != nil {
+			fmt.Println("Ошибка конвертации:", err)
+			return
 		}
 
-		valutaInTo := valutaIn + valutaTo
-		for key, value := range valutaMAP {
-			if valutaInTo == key {
-				itogo := (*value) * amount
-				fmt.Printf("Итого: %.2f", itogo)
-			}
-		}
-
-		// fmt.Printf("Итого: %.2f", convert(amount, valutaIn, valutaTo))
+		fmt.Printf("%.2f %s = %.2f %s\n", amount, valutaIn, result, valutaTo)
 		break
 	}
 }
@@ -86,25 +66,6 @@ func user() string {
 	fmt.Scan(&name)
 	return name
 }
-
-/*func convert(amount float64, from string, to string) float64 {
-	switch {
-	case from == "USD" && to == "EUR":
-		return amount * usdToEuro
-	case from == "EUR" && to == "USD":
-		return amount * (1 / usdToEuro)
-	case from == "USD" && to == "RUB":
-		return amount * usdToRub
-	case from == "RUB" && to == "USD":
-		return amount / usdToRub
-	case from == "EUR" && to == "RUB":
-		return amount * euroToRub
-	case from == "RUB" && to == "EUR":
-		return amount / euroToRub
-	default:
-		return amount
-	}
-}*/
 
 func viborValuti(valuta string) (string, string) {
 	switch valuta {
@@ -123,4 +84,28 @@ func proverkaValuti(valuta string) (string, error) {
 	} else {
 		return valuta, nil
 	}
+}
+
+func getRatesMap() *map[string]float64 {
+	rates := map[string]float64{
+		"USDEUR": 0.86,
+		"EURUSD": 1 / 0.86,
+		"USDRUB": 78.25,
+		"RUBUSD": 1 / 78.25,
+		"EURRUB": 78.25 / 0.86,
+		"RUBEUR": 0.86 / 78.25,
+	}
+	return &rates
+}
+
+func convert(amount float64, valutaIn, valutaTo string, rates *map[string]float64) (float64, error) {
+	key := valutaIn + valutaTo
+	rate, ok := (*rates)[key]
+	if !ok {
+		if valutaIn == valutaTo {
+			return amount, nil
+		}
+		return 0, errors.New("курс конвертации не найден")
+	}
+	return amount * rate, nil
 }
