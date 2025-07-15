@@ -11,8 +11,6 @@ type Bin struct {
 	Name      string
 }
 
-type BinList []Bin
-
 func NewBin(id string, private bool, name string) *Bin {
 	return &Bin{
 		ID:        id,
@@ -20,6 +18,13 @@ func NewBin(id string, private bool, name string) *Bin {
 		CreatedAt: time.Now(),
 		Name:      name,
 	}
+}
+
+type BinList []Bin
+
+func NewBinList() *BinList {
+	bl := make(BinList, 0)
+	return &bl
 }
 
 func main() {
